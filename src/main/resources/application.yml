@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: forohub
+  config:
+    import: optional:secrets.properties
+  jpa:
+    show-sql: true
+  datasource:
+    url: jdbc:mariadb://${DATABASE_HOST}/${DATABASE_NAME}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+server:
+  error:
+    include-stacktrace: never
+security:
+  token:
+    secret: ${API_SECRET}
+    issuer: ${TOKEN_ISSUER}
