@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.ricardodev.forohub.api.entities.User;
 
@@ -54,17 +53,13 @@ public class JWTService {
 	}
 
 	public Boolean isTokenValid(String token, UserDetails userDetails) {
-		try {
-			Algorithm algorithm = Algorithm.HMAC256(secretKey);
-			JWT.require(algorithm)
-					.withIssuer(issuer)
-					.withSubject(userDetails.getUsername())
-					.build()
-					.verify(token);
-			return true; // Token is valid and not expired
-		} catch (JWTVerificationException | IllegalArgumentException exception) {
-			return false; // Token verification failed or expired
-		}
+		Algorithm algorithm = Algorithm.HMAC256(secretKey);
+		JWT.require(algorithm)
+				.withIssuer(issuer)
+				.withSubject(userDetails.getUsername())
+				.build()
+				.verify(token);
+		return true; // Token is valid and not expired
 	}
 
 	public String getUsername(String token) {
