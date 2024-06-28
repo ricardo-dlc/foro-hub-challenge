@@ -12,7 +12,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.ricardodev.forohub.api.dtos.LoginResponseDto;
 import com.ricardodev.forohub.api.dtos.LoginUserDto;
 import com.ricardodev.forohub.api.dtos.RegisterUserDto;
-import com.ricardodev.forohub.api.dtos.RegisterUserReponseDto;
+import com.ricardodev.forohub.api.dtos.UserReponseDto;
 import com.ricardodev.forohub.api.entities.User;
 import com.ricardodev.forohub.api.services.AuthenticationService;
 import com.ricardodev.forohub.api.services.JWTService;
@@ -30,10 +30,10 @@ public class AuthenticationController {
 	}
 
 	@PostMapping("/signup")
-	public ResponseEntity<RegisterUserReponseDto> register(@RequestBody RegisterUserDto registerUserDto,
+	public ResponseEntity<UserReponseDto> register(@RequestBody RegisterUserDto registerUserDto,
 			UriComponentsBuilder uriComponentsBuilder) {
 		User registeredUser = authenticationService.signup(registerUserDto);
-		RegisterUserReponseDto response = new RegisterUserReponseDto(registeredUser);
+		UserReponseDto response = new UserReponseDto(registeredUser);
 		URI url = uriComponentsBuilder.path("/users/{id}").buildAndExpand(response.id()).toUri();
 		return ResponseEntity.created(url).body(response);
 	}
@@ -41,7 +41,6 @@ public class AuthenticationController {
 	@PostMapping("/login")
 	public ResponseEntity<LoginResponseDto> authenticate(@RequestBody LoginUserDto loginUserDto) {
 		User authenticatedUser = authenticationService.authenticate(loginUserDto);
-		System.out.println("Authenticated user: " + authenticatedUser.getFullName());
 
 		String jwtToken = jwtService.generateToken(authenticatedUser);
 		String expiresAt = jwtService.getExpiresAt(jwtToken);
