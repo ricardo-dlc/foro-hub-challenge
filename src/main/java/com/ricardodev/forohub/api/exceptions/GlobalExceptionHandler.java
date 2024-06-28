@@ -5,6 +5,8 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -14,6 +16,12 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+	private record ValidationErrorData(String field, String error) {
+		public ValidationErrorData(FieldError error) {
+			this(error.getField(), error.getDefaultMessage());
+		}
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ProblemDetail handleSecurityException(Exception exception) {
 		ProblemDetail errorDetail = null;
@@ -36,6 +44,15 @@ public class GlobalExceptionHandler {
 		if (exception instanceof AccessDeniedException) {
 			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403), exception.getMessage());
 			errorDetail.setProperty("description", "You are not authorized to access this resource");
+		}
+
+		if (exception instanceof MethodArgumentNotValidException) {
+			var exceptionAsErrors = (MethodArgumentNotValidException) exception;
+			var errors = exceptionAsErrors.getFieldErrors().stream()
+					.map(ValidationErrorData::new).toList();
+			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), exception.getMessage());
+			errorDetail.setProperty("description", "Validation failed");
+			errorDetail.setProperty("errors", errors);
 		}
 
 		if (exception instanceof SignatureVerificationException) {

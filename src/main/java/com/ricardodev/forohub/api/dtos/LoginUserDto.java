@@ -1,5 +1,9 @@
 package com.ricardodev.forohub.api.dtos;
 
-public record LoginUserDto(String email, String password) {
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
+public record LoginUserDto(
+		@NotBlank @Email String email,
+		@NotBlank String password) {
 }

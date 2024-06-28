@@ -17,6 +17,8 @@ import com.ricardodev.forohub.api.entities.User;
 import com.ricardodev.forohub.api.services.AuthenticationService;
 import com.ricardodev.forohub.api.services.JWTService;
 
+import jakarta.validation.Valid;
+
 @RequestMapping("/auth")
 @RestController
 public class AuthenticationController {
@@ -30,7 +32,7 @@ public class AuthenticationController {
 	}
 
 	@PostMapping("/signup")
-	public ResponseEntity<UserReponseDto> register(@RequestBody RegisterUserDto registerUserDto,
+	public ResponseEntity<UserReponseDto> register(@RequestBody @Valid RegisterUserDto registerUserDto,
 			UriComponentsBuilder uriComponentsBuilder) {
 		User registeredUser = authenticationService.signup(registerUserDto);
 		UserReponseDto response = new UserReponseDto(registeredUser);
