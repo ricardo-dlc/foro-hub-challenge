@@ -77,6 +77,8 @@ public class GlobalExceptionHandler {
 			errorDetail.setProperty("description", "Unknown internal server error.");
 		}
 
+		errorDetail.setDetail(null);
+
 		return errorDetail;
 	}
 }
