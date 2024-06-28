@@ -6,11 +6,10 @@ import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.ricardodev.forohub.api.services.ULIDService;
+import com.ricardodev.forohub.api.dtos.RegisterUserDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,10 +21,12 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Table(name = "users")
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
@@ -50,14 +51,8 @@ public class User implements UserDetails {
 	@Column(name = "updated_at")
 	private Date updatedAt;
 
-	@Autowired
-	private transient ULIDService ulidGenerator;
-
 	@PrePersist
 	public void prePersist() {
-		if (id == null) {
-			id = ulidGenerator.generate();
-		}
 		createdAt = new Date();
 		updatedAt = createdAt;
 	}
@@ -80,5 +75,11 @@ public class User implements UserDetails {
 	@Override
 	public String getUsername() {
 		return email;
+	}
+
+	public User(RegisterUserDto input) {
+		email = input.email();
+		fullName = input.fullName();
+		password = input.password();
 	}
 }

@@ -13,6 +13,7 @@ server:
   error:
     include-stacktrace: never
 security:
-  token:
-    secret: ${API_SECRET}
-    issuer: ${TOKEN_ISSUER}
+  jwt:
+    secret-key: ${JWT_SECRET_KEY}
+    issuer: ${JWT_ISSUER}
+    expiration-time: ${JWT_EXPIRATION_TIME:3600000}
