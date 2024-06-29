@@ -16,22 +16,19 @@ public class AuthenticationService {
 
 	private final PasswordEncoder passwordEncoder;
 	private final AuthenticationManager authenticationManager;
-	private final ULIDService ulidService;
 
 	public AuthenticationService(
 			UserRepository userRepository,
 			AuthenticationManager authenticationManager,
-			PasswordEncoder passwordEncoder,
-			ULIDService ulidService) {
+			PasswordEncoder passwordEncoder) {
 		this.authenticationManager = authenticationManager;
 		this.userRepository = userRepository;
-		this.ulidService = ulidService;
 		this.passwordEncoder = passwordEncoder;
 	}
 
 	public User signup(RegisterUserDto input) {
 		User user = new User(input);
-		user.setId(ulidService.generate());
+		// user.setId(ulidService.generate());
 		user.setPassword(passwordEncoder.encode(input.password()));
 
 		return userRepository.save(user);
