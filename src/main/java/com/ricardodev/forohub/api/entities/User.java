@@ -1,11 +1,8 @@
 package com.ricardodev.forohub.api.entities;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -13,9 +10,6 @@ import com.ricardodev.forohub.api.dtos.RegisterUserDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -29,11 +23,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = "id")
-public class User implements UserDetails {
-	@Id
-	private String id;
-
+@EqualsAndHashCode(callSuper = true)
+public class User extends BaseEntity implements UserDetails {
 	@Column(nullable = false)
 	private String fullName;
 
@@ -42,25 +33,6 @@ public class User implements UserDetails {
 
 	@Column(nullable = false)
 	private String password;
-
-	@CreationTimestamp
-	@Column(updatable = false, name = "created_at")
-	private Date createdAt;
-
-	@UpdateTimestamp
-	@Column(name = "updated_at")
-	private Date updatedAt;
-
-	@PrePersist
-	public void prePersist() {
-		createdAt = new Date();
-		updatedAt = createdAt;
-	}
-
-	@PreUpdate
-	public void preUpdate() {
-		updatedAt = new Date();
-	}
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
