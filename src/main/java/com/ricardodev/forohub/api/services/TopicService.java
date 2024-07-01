@@ -49,7 +49,7 @@ public class TopicService {
 	}
 
 	public TopicResponseDto findById(String id) {
-		return topicRepository.findByIdAndDeletedFalse(id)
+		return topicRepository.findById(id)
 				.map(TopicResponseDto::new)
 				.orElseThrow(() -> new EntityNotFoundException("Topic not found with id " + id));
 	}

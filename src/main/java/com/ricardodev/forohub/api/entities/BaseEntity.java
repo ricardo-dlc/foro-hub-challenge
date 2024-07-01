@@ -41,8 +41,6 @@ public abstract class BaseEntity {
 	@Column(nullable = false)
 	private Boolean deleted = false;
 
-	private transient Status status = Status.ACTIVE;
-
 	@PrePersist
 	public void onCreate() {
 		if (id == null) {
@@ -52,6 +50,9 @@ public abstract class BaseEntity {
 
 	public void delete() {
 		deleted = true;
-		status = Status.DELETED;
+	}
+
+	public Status getStatus() {
+		return deleted ? Status.DELETED : Status.ACTIVE;
 	}
 }
