@@ -33,10 +33,17 @@ public abstract class BaseEntity {
 	@Column(name = "updated_at")
 	private Date updatedAt;
 
+	@Column(nullable = false)
+	private Boolean deleted = false;
+
 	@PrePersist
 	public void onCreate() {
 		if (id == null) {
 			id = UlidGenerator.generate();
 		}
+	}
+
+	public void delete() {
+		deleted = true;
 	}
 }

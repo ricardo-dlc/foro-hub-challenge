@@ -52,4 +52,11 @@ public class TopicService {
 		return new TopicResponseDto(response);
 	}
 
+	@Transactional
+	public void deleteTopic(String id) {
+		var response = topicRepository.getReferenceById(id);
+
+		response.delete();
+	}
+
 }
