@@ -12,6 +12,7 @@ import com.ricardodev.forohub.api.repositories.CourseRepository;
 import com.ricardodev.forohub.api.repositories.TopicRepository;
 import com.ricardodev.forohub.api.repositories.UserRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -48,8 +49,9 @@ public class TopicService {
 	}
 
 	public TopicResponseDto findById(String id) {
-		var response = topicRepository.getReferenceById(id);
-		return new TopicResponseDto(response);
+		return topicRepository.findByIdAndDeletedFalse(id)
+				.map(TopicResponseDto::new)
+				.orElseThrow(() -> new EntityNotFoundException("Topic not found with id " + id));
 	}
 
 	@Transactional
@@ -57,6 +59,10 @@ public class TopicService {
 		var response = topicRepository.getReferenceById(id);
 
 		response.delete();
+	}
+
+	public Page<TopicResponseDto> findNonDeletedTopics(Pageable page) {
+		return topicRepository.findByDeletedFalse(page).map(TopicResponseDto::new);
 	}
 
 }

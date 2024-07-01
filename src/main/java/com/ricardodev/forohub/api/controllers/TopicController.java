@@ -34,8 +34,8 @@ public class TopicController {
 	}
 
 	@GetMapping
-	public ResponseEntity<Page<TopicResponseDto>> getAllTopic(@PageableDefault(size = 5) Pageable page) {
-		var topicResponse = topicService.findAll(page);
+	public ResponseEntity<Page<TopicResponseDto>> getAllTopics(@PageableDefault(size = 5) Pageable page) {
+		var topicResponse = topicService.findNonDeletedTopics(page);
 
 		return ResponseEntity.ok(topicResponse);
 	}
