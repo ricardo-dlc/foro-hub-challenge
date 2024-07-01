@@ -1,5 +1,6 @@
 package com.ricardodev.forohub.api.exceptions;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
@@ -36,6 +37,21 @@ public class GlobalExceptionHandler {
 			return errorDetail;
 		}
 
+		if (exception instanceof DataIntegrityViolationException) {
+			var exceptionError = (DataIntegrityViolationException) exception;
+			var cause = exceptionError.getMostSpecificCause();
+			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), exception.getMessage());
+			errorDetail.setProperty("description", "A validation error occured. \n" + cause);
+		}
+
+		if (exception instanceof DataValidationException) {
+			// var exceptionError = (DataIntegrityViolationException) exception;
+			// var cause = exceptionError.getMostSpecificCause();
+			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), exception.getMessage());
+			errorDetail.setProperty("description", "A validation error occured");
+			// errorDetail.setProperty("reason", "A validation error occured");
+		}
+
 		if (exception instanceof AccountStatusException) {
 			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403), exception.getMessage());
 			errorDetail.setProperty("description", "The account is locked");
@@ -50,7 +66,8 @@ public class GlobalExceptionHandler {
 			var exceptionAsErrors = (MethodArgumentNotValidException) exception;
 			var errors = exceptionAsErrors.getFieldErrors().stream()
 					.map(ValidationErrorData::new).toList();
-			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), exception.getMessage());
+			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400),
+					exceptionAsErrors.getDetailMessageCode());
 			errorDetail.setProperty("description", "Validation failed");
 			errorDetail.setProperty("errors", errors);
 		}
@@ -77,7 +94,7 @@ public class GlobalExceptionHandler {
 			errorDetail.setProperty("description", "Unknown internal server error.");
 		}
 
-		errorDetail.setDetail(null);
+		// errorDetail.setDetail(null);
 
 		return errorDetail;
 	}
