@@ -14,6 +14,5 @@ public record TopicResponseDto(
 	public TopicResponseDto(Topic data) {
 		this(data.getId(), data.getAuthor().getId(), data.getTitle(), data.getMessage(),
 				data.getUpdatedAt());
-		System.out.println(data);
 	}
 }

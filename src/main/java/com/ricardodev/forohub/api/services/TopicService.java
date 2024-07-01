@@ -1,5 +1,7 @@
 package com.ricardodev.forohub.api.services;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.ricardodev.forohub.api.dtos.CreateTopicDto;
@@ -10,7 +12,6 @@ import com.ricardodev.forohub.api.repositories.CourseRepository;
 import com.ricardodev.forohub.api.repositories.TopicRepository;
 import com.ricardodev.forohub.api.repositories.UserRepository;
 
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -40,6 +41,10 @@ public class TopicService {
 
 		// Convert to DTO within the service
 		return new TopicResponseDto(savedTopic);
+	}
+
+	public Page<TopicResponseDto> findAll(Pageable page) {
+		return topicRepository.findAll(page).map(TopicResponseDto::new);
 	}
 
 }
