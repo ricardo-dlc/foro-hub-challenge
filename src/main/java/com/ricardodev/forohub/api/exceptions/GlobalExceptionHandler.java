@@ -15,6 +15,8 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	private record ValidationErrorData(String field, String error) {
@@ -87,6 +89,12 @@ public class GlobalExceptionHandler {
 			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403),
 					exception.getMessage());
 			errorDetail.setProperty("description", "The provided token is invalid");
+		}
+
+		if (exception instanceof EntityNotFoundException) {
+			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(404),
+					exception.getMessage());
+			errorDetail.setProperty("description", "Entity not found");
 		}
 
 		if (errorDetail == null) {

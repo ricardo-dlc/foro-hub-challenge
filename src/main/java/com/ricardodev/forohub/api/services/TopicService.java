@@ -47,4 +47,9 @@ public class TopicService {
 		return topicRepository.findAll(page).map(TopicResponseDto::new);
 	}
 
+	public TopicResponseDto findById(String id) {
+		var response = topicRepository.getReferenceById(id);
+		return new TopicResponseDto(response);
+	}
+
 }
