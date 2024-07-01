@@ -17,3 +17,10 @@ security:
     secret-key: ${JWT_SECRET_KEY}
     issuer: ${JWT_ISSUER}
     expiration-time: ${JWT_EXPIRATION_TIME:3600000}
+logging:
+  level:
+    org:
+      hibernate:
+        orm:
+          jdbc:
+            bind: trace
