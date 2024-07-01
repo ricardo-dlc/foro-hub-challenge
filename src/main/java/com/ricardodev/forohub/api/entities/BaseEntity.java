@@ -22,6 +22,11 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode(of = "id", callSuper = false)
 public abstract class BaseEntity {
+	public enum Status {
+		ACTIVE,
+		DELETED
+	}
+
 	@Id
 	private String id;
 
@@ -36,6 +41,8 @@ public abstract class BaseEntity {
 	@Column(nullable = false)
 	private Boolean deleted = false;
 
+	private transient Status status = Status.ACTIVE;
+
 	@PrePersist
 	public void onCreate() {
 		if (id == null) {
@@ -45,5 +52,6 @@ public abstract class BaseEntity {
 
 	public void delete() {
 		deleted = true;
+		status = Status.DELETED;
 	}
 }
