@@ -1,5 +1,7 @@
 package com.ricardodev.forohub.api.controllers;
 
+import java.net.URI;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.ricardodev.forohub.api.dtos.CreateTopicDto;
 import com.ricardodev.forohub.api.dtos.TopicResponseDto;
@@ -30,9 +33,11 @@ public class TopicController {
 	}
 
 	@PostMapping
-	public ResponseEntity<TopicResponseDto> createTopic(@RequestBody @Valid CreateTopicDto data) {
+	public ResponseEntity<TopicResponseDto> createTopic(@RequestBody @Valid CreateTopicDto data,
+			UriComponentsBuilder uriComponentsBuilder) {
 		var topicResponse = topicService.createTopic(data);
-		return ResponseEntity.ok(topicResponse);
+		URI url = uriComponentsBuilder.path("/topics/{id}").buildAndExpand(topicResponse.id()).toUri();
+		return ResponseEntity.created(url).body(topicResponse);
 	}
 
 	@GetMapping
@@ -60,7 +65,6 @@ public class TopicController {
 	public ResponseEntity<Void> updateTopic(@PathVariable(required = true) String id,
 			@RequestBody @Valid UpdateTopicDto data) {
 		topicService.updateTopic(id, data);
-
-		return ResponseEntity.ok().build();
+		return ResponseEntity.noContent().build();
 	}
 }
