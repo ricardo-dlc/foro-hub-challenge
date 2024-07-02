@@ -1,8 +1,8 @@
 package com.ricardodev.forohub.api.exceptions;
 
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ProblemDetail;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AccountStatusException;
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 
@@ -26,90 +27,75 @@ public class GlobalExceptionHandler {
 		}
 	}
 
-	@ExceptionHandler(Exception.class)
-	public ProblemDetail handleSecurityException(Exception exception) {
-		ProblemDetail errorDetail = null;
+	private ResponseEntity<ErrorResponse> buildResponse(ErrorResponse response,
+			HttpStatus code) {
+		return new ResponseEntity<ErrorResponse>(response, code);
+	}
 
-		// TODO send this stack trace to an observability tool
-		exception.printStackTrace();
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(
+			DataIntegrityViolationException exception) {
+		ErrorResponse response = new ErrorResponse();
+		HttpStatus code = HttpStatus.BAD_REQUEST;
+		response.setTitle("Payload Error");
+		response.setDetail(exception.getMostSpecificCause().toString());
+		response.setStatus(code);
+		return buildResponse(response, code);
+	}
+
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
+			MethodArgumentNotValidException exception) {
+		ErrorResponse response = new ErrorResponse();
+		HttpStatus code = HttpStatus.BAD_REQUEST;
+		var errors = exception.getFieldErrors().stream()
+				.map(ValidationErrorData::new).toList();
+		response.setTitle("Validation Error");
+		response.setDetail(exception.getDetailMessageCode());
+		response.setStatus(code);
+		response.setProperty("errors", errors);
+		return buildResponse(response, code);
+	}
+
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<ErrorResponse> handleSecurityException(Exception exception) {
+		ErrorResponse response = new ErrorResponse();
+		HttpStatus code = HttpStatus.INTERNAL_SERVER_ERROR;
 
 		if (exception instanceof BadCredentialsException) {
-			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(401), exception.getMessage());
-			errorDetail.setProperty("description", "The username or password is incorrect");
-
-			return errorDetail;
+			response.setTitle("The username or password is incorrect");
+			code = HttpStatus.UNAUTHORIZED;
+		} else if (exception instanceof AccountStatusException) {
+			response.setTitle("The account is locked");
+			code = HttpStatus.FORBIDDEN;
+		} else if (exception instanceof AccessDeniedException) {
+			response.setTitle("You are not authorized to access this resource");
+			code = HttpStatus.FORBIDDEN;
+		} else if (exception instanceof JWTVerificationException) {
+			if (exception instanceof SignatureVerificationException) {
+				response.setTitle("The JWT signature is invalid");
+			} else if (exception instanceof TokenExpiredException) {
+				response.setTitle("The provided token has expired");
+			} else if (exception instanceof JWTDecodeException) {
+				response.setTitle("The provided token is invalid");
+			} else {
+				response.setTitle("JWT Token Validation Error");
+			}
+			code = HttpStatus.UNAUTHORIZED;
+		} else if (exception instanceof EntityNotFoundException) {
+			response.setTitle("Entity not found");
+			code = HttpStatus.NOT_FOUND;
+		} else if (exception instanceof HttpMessageNotReadableException
+				|| exception instanceof DataValidationException) {
+			response.setTitle("Validation Error");
+			code = HttpStatus.BAD_REQUEST;
+		} else {
+			response.setTitle("Unknown internal server error.");
 		}
 
-		if (exception instanceof DataIntegrityViolationException) {
-			var exceptionError = (DataIntegrityViolationException) exception;
-			var cause = exceptionError.getMostSpecificCause();
-			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), exception.getMessage());
-			errorDetail.setProperty("description", "A validation error occured. \n" + cause);
-		}
+		response.setStatus(code);
+		response.setDetail(exception.getMessage());
 
-		if (exception instanceof DataValidationException) {
-			// var exceptionError = (DataIntegrityViolationException) exception;
-			// var cause = exceptionError.getMostSpecificCause();
-			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), exception.getMessage());
-			errorDetail.setProperty("description", "A validation error occured");
-			// errorDetail.setProperty("reason", "A validation error occured");
-		}
-
-		if (exception instanceof AccountStatusException) {
-			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403), exception.getMessage());
-			errorDetail.setProperty("description", "The account is locked");
-		}
-
-		if (exception instanceof AccessDeniedException) {
-			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403), exception.getMessage());
-			errorDetail.setProperty("description", "You are not authorized to access this resource");
-		}
-
-		if (exception instanceof MethodArgumentNotValidException) {
-			var exceptionAsErrors = (MethodArgumentNotValidException) exception;
-			var errors = exceptionAsErrors.getFieldErrors().stream()
-					.map(ValidationErrorData::new).toList();
-			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400),
-					exceptionAsErrors.getDetailMessageCode());
-			errorDetail.setProperty("description", "Validation failed");
-			errorDetail.setProperty("errors", errors);
-		}
-
-		if (exception instanceof SignatureVerificationException) {
-			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403),
-					exception.getMessage());
-			errorDetail.setProperty("description", "The JWT signature is invalid");
-		}
-
-		if (exception instanceof TokenExpiredException) {
-			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403), exception.getMessage());
-			errorDetail.setProperty("description", "The provided token has expired");
-		}
-
-		if (exception instanceof JWTDecodeException) {
-			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403),
-					exception.getMessage());
-			errorDetail.setProperty("description", "The provided token is invalid");
-		}
-
-		if (exception instanceof EntityNotFoundException) {
-			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(404),
-					exception.getMessage());
-			errorDetail.setProperty("description", "Entity not found");
-		}
-
-		if (exception instanceof HttpMessageNotReadableException) {
-			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), exception.getMessage());
-			errorDetail.setProperty("description", "A validation error occured");
-		}
-
-		if (errorDetail == null) {
-			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), exception.getMessage());
-			errorDetail.setProperty("description", "Unknown internal server error.");
-		}
-
-		// errorDetail.setDetail(null);
-
-		return errorDetail;
+		return buildResponse(response, code);
 	}
 }
