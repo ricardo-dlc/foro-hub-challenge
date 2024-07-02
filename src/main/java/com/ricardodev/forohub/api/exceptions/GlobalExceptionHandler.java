@@ -3,6 +3,7 @@ package com.ricardodev.forohub.api.exceptions;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -95,6 +96,11 @@ public class GlobalExceptionHandler {
 			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(404),
 					exception.getMessage());
 			errorDetail.setProperty("description", "Entity not found");
+		}
+
+		if (exception instanceof HttpMessageNotReadableException) {
+			errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), exception.getMessage());
+			errorDetail.setProperty("description", "A validation error occured");
 		}
 
 		if (errorDetail == null) {

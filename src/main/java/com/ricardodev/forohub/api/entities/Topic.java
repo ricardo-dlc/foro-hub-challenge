@@ -1,6 +1,7 @@
 package com.ricardodev.forohub.api.entities;
 
 import com.ricardodev.forohub.api.dtos.CreateTopicDto;
+import com.ricardodev.forohub.api.dtos.UpdateTopicDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,6 +40,13 @@ public class Topic extends BaseEntity {
 	private Course course;
 
 	public Topic(CreateTopicDto data, User author, Course course) {
+		this.title = data.title();
+		this.message = data.message();
+		this.author = author;
+		this.course = course;
+	}
+
+	public void update(UpdateTopicDto data, User author, Course course) {
 		this.title = data.title();
 		this.message = data.message();
 		this.author = author;

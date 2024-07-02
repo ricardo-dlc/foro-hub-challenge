@@ -13,12 +13,10 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 @MappedSuperclass
 @Getter
-@Setter
 @ToString
 @EqualsAndHashCode(of = "id", callSuper = false)
 public abstract class BaseEntity {
@@ -50,6 +48,10 @@ public abstract class BaseEntity {
 
 	public void delete() {
 		deleted = true;
+	}
+
+	public void activate() {
+		deleted = false;
 	}
 
 	public Status getStatus() {

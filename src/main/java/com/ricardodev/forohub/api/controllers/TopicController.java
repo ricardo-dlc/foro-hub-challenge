@@ -8,12 +8,14 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ricardodev.forohub.api.dtos.CreateTopicDto;
 import com.ricardodev.forohub.api.dtos.TopicResponseDto;
+import com.ricardodev.forohub.api.dtos.UpdateTopicDto;
 import com.ricardodev.forohub.api.services.TopicService;
 
 import jakarta.validation.Valid;
@@ -52,5 +54,13 @@ public class TopicController {
 		topicService.deleteTopic(id);
 
 		return ResponseEntity.noContent().build();
+	}
+
+	@PutMapping("/{id}")
+	public ResponseEntity<Void> updateTopic(@PathVariable(required = true) String id,
+			@RequestBody @Valid UpdateTopicDto data) {
+		topicService.updateTopic(id, data);
+
+		return ResponseEntity.ok().build();
 	}
 }

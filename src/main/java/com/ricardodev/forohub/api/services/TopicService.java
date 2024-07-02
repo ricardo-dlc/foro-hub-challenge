@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 
 import com.ricardodev.forohub.api.dtos.CreateTopicDto;
 import com.ricardodev.forohub.api.dtos.TopicResponseDto;
+import com.ricardodev.forohub.api.dtos.UpdateTopicDto;
 import com.ricardodev.forohub.api.entities.Topic;
+import com.ricardodev.forohub.api.entities.BaseEntity.Status;
 import com.ricardodev.forohub.api.exceptions.DataValidationException;
 import com.ricardodev.forohub.api.repositories.CourseRepository;
 import com.ricardodev.forohub.api.repositories.TopicRepository;
@@ -63,6 +65,23 @@ public class TopicService {
 
 	public Page<TopicResponseDto> findNonDeletedTopics(Pageable page) {
 		return topicRepository.findByDeletedFalse(page).map(TopicResponseDto::new);
+	}
+
+	@Transactional
+	public void updateTopic(String id, UpdateTopicDto data) {
+		var topic = topicRepository.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("Topic with id " + id + "not found"));
+		var author = userRepository.findById(data.authorId())
+				.orElseThrow(() -> new DataValidationException("Author not found"));
+		var course = courseRepository.findById(data.courseId())
+				.orElseThrow(() -> new DataValidationException("Course not found"));
+		topic.update(data, author, course);
+
+		if (data.status() == Status.ACTIVE) {
+			topic.activate();
+		} else {
+			topic.delete();
+		}
 	}
 
 }
